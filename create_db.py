@@ -29,28 +29,19 @@ pinecone.init(
 # split documents
 # by default, text splitter works page per page (separator "\n\n"),
 # you can use another separator as argument
-# loader = PyPDFLoader(FILE)
-# text_splitter = CharacterTextSplitter(chunk_size=1000,
-#                                       chunk_overlap=100)
-# loader = PyPDFLoader(FILE)
-# documents = loader.load_and_split(text_splitter=text_splitter)
+text_splitter = CharacterTextSplitter(chunk_size=1000,
+                                      chunk_overlap=100)
+loader = PyPDFLoader(FILE)
+documents = loader.load_and_split(text_splitter=text_splitter)
 
 # Select embeddings
 embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
 
-# db = Pinecone.from_documents(documents,
-#                              embeddings,
-#                              index_name=index_name,
-#                              namespace=NAMESPACE)
-
-# if you already have an index, you can load it like this
-db = Pinecone.from_existing_index(INDEX_NAME,
-                                  embeddings,
-                                  namespace=NAMESPACE)
-
-# index_description = pinecone.describe_index(index_name)
-# index = pinecone.Index(index_name)
-# index_stats_response = index.describe_index_stats()
+# create db
+db = Pinecone.from_documents(documents,
+                             embeddings,
+                             index_name=INDEX_NAME,
+                             namespace=NAMESPACE)
 
 # Create retriever interface
 retriever = db.as_retriever()
@@ -59,11 +50,17 @@ qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=os.environ["OPENAI_AP
                                  retriever=retriever,
                                  return_source_documents=True)
 
+# test retriever
 result_ = qa(QUERY_TEXT)
-
 best_scores = db.similarity_search_with_score(QUERY_TEXT,
                                               k=2,
                                               namespace=NAMESPACE)
+
+# useful snippets
+
+# index_description = pinecone.describe_index(index_name)
+# index = pinecone.Index(index_name)
+# index_stats_response = index.describe_index_stats()
 
 # delete
 # index = pinecone.Index(index_name)

@@ -7,3 +7,4 @@ pypdf
 pinecone-client
 pdf2image
 s3fs
+pypdfium2

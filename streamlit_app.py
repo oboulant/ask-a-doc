@@ -8,7 +8,7 @@ from langchain.llms import OpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import Pinecone
-from pdf2image import convert_from_path
+import pypdfium2 as pdfium
 
 NAMESPACE = "model-series"
 INDEX_NAME = "demo-ir"
@@ -19,7 +19,7 @@ st.title("Ask A Doc")
 
 st.write("MODEL 182/T182 SERIES 1997 AND ON")
 
-st.cache_resource()
+st.cache_data()
 def download_file():
     # download pdf file from s3
     remote_file_addr = st.secrets["REMOTE_FILE_ADDR"]
@@ -62,16 +62,14 @@ if len(result):
     st.info(response["result"])
     st.write("The answer is based on following sources : ")
     # get source
-    pages_ = [int(elem.metadata["page"]) for elem in response["source_documents"]]
+    page_indices_ = [int(elem.metadata["page"]) for elem in response["source_documents"]]
     # remove duplicates
-    pages = []
-    for elem in pages_:
-        if elem not in pages:
-            pages.append(elem)
+    page_indices = []
+    for elem in page_indices_:
+        if elem not in page_indices:
+            page_indices.append(elem)
     # display pages
-    for page_i in pages:
-        pages_i = convert_from_path(local_file_addr,
-                                    dpi=500,
-                                    first_page=page_i,
-                                    last_page=page_i + 1)[0]
-        st.image(pages_i)
+    pdf = pdfium.PdfDocument(local_file_addr)
+    renderer = pdf.render(pdfium.PdfBitmap.to_pil, page_indices=page_indices)
+    for image in renderer:
+        st.image(image)
