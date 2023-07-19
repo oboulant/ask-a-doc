@@ -22,7 +22,7 @@ st.write("MODEL 182/T182 SERIES 1997 AND ON")
 st.cache_resource
 def download_file():
     # download pdf file from s3
-    remote_file_addr = os.environ["REMOTE_FILE_ADDR"]
+    remote_file_addr = st.secrets["REMOTE_FILE_ADDR"]
     temp_dir = os.path.join(tempfile.gettempdir(), "ir-demo")
     os.makedirs(temp_dir, exist_ok=True)
     local_file_addr = os.path.join(temp_dir, os.path.basename(remote_file_addr))
@@ -39,18 +39,18 @@ with st.form('myform', clear_on_submit=True):
     # init vectordb and retriever. why does this have to be here ?
     # if not, there is a pinecone connection error...
     pinecone.init(
-        api_key=os.environ["PINECONE_API_KEY"],
-        environment=os.environ["PINECONE_ENV"]
+        api_key=st.secrets["PINECONE_API_KEY"],
+        environment=st.secrets["PINECONE_ENV"]
     )
-    embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
+    embeddings = OpenAIEmbeddings(openai_api_key=st.secrets["OPENAI_API_KEY"])
     db = Pinecone.from_existing_index(INDEX_NAME,
                                         embeddings,
                                         namespace=NAMESPACE)
     retriever = db.as_retriever()
-    qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=os.environ["OPENAI_API_KEY"]),
-                                    chain_type='stuff',
-                                    retriever=retriever,
-                                    return_source_documents=True)
+    qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=st.secrets["OPENAI_API_KEY"]),
+                                     chain_type='stuff',
+                                     retriever=retriever,
+                                     return_source_documents=True)
     # submit question
     submitted = st.form_submit_button('Submit')
     if submitted:
