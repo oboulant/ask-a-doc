@@ -19,7 +19,7 @@ st.title("Ask A Doc")
 
 st.write("MODEL 182/T182 SERIES 1997 AND ON")
 
-st.cache_resource
+st.cache_resource()
 def download_file():
     # download pdf file from s3
     remote_file_addr = st.secrets["REMOTE_FILE_ADDR"]
