@@ -2,12 +2,12 @@ import os
 import logging
 
 import pinecone
-from langchain.document_loaders import PyPDFLoader
 from langchain.llms import OpenAI
-from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
 from langchain.chains import RetrievalQA
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import CharacterTextSplitter
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ logging.basicConfig(
 NAMESPACE = "model-series"
 QUERY_TEXT = "what is the inspection time interval ?"
 FILE = "/media/llt/LENOVO5/data/IR/c2b0c2b0c2b0-cessna_182s_1997on_mm_182smm.pdf"
+INDEX_NAME = "demo-ir"
 
 # initialize pinecone
 pinecone.init(
@@ -37,15 +38,13 @@ pinecone.init(
 # Select embeddings
 embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
 
-index_name = "demo-ir"
-
 # db = Pinecone.from_documents(documents,
 #                              embeddings,
 #                              index_name=index_name,
 #                              namespace=NAMESPACE)
 
 # if you already have an index, you can load it like this
-db = Pinecone.from_existing_index(index_name,
+db = Pinecone.from_existing_index(INDEX_NAME,
                                   embeddings,
                                   namespace=NAMESPACE)
 
@@ -57,8 +56,10 @@ db = Pinecone.from_existing_index(index_name,
 retriever = db.as_retriever()
 qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=os.environ["OPENAI_API_KEY"]),
                                  chain_type='stuff',
-                                 retriever=retriever)
-result_ = qa.run(QUERY_TEXT)
+                                 retriever=retriever,
+                                 return_source_documents=True)
+
+result_ = qa(QUERY_TEXT)
 
 best_scores = db.similarity_search_with_score(QUERY_TEXT,
                                               k=2,
