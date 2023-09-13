@@ -15,9 +15,8 @@ logging.basicConfig(
     format="%(levelname)s : %(message)s", level=logging.INFO, force=True
 )
 
-NAMESPACE = "model-series"
 QUERY_TEXT = "what is the inspection time interval ?"
-FILE = "/media/llt/LENOVO5/data/IR/c2b0c2b0c2b0-cessna_182s_1997on_mm_182smm.pdf"
+FILE = "/Users/oboulant/Downloads/c2b0c2b0c2b0-cessna_182s_1997on_mm_182smm.pdf"
 INDEX_NAME = "demo-ir"
 
 # initialize pinecone
@@ -40,8 +39,7 @@ embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
 # create db
 db = Pinecone.from_documents(documents,
                              embeddings,
-                             index_name=INDEX_NAME,
-                             namespace=NAMESPACE)
+                             index_name=INDEX_NAME)
 
 # Create retriever interface
 retriever = db.as_retriever()
@@ -53,8 +51,7 @@ qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=os.environ["OPENAI_AP
 # test retriever
 result_ = qa(QUERY_TEXT)
 best_scores = db.similarity_search_with_score(QUERY_TEXT,
-                                              k=2,
-                                              namespace=NAMESPACE)
+                                              k=2)
 
 # useful snippets
 
