@@ -10,7 +10,6 @@ from langchain.chains import RetrievalQA
 from langchain.vectorstores import Pinecone
 import pypdfium2 as pdfium
 
-NAMESPACE = "model-series"
 INDEX_NAME = "demo-ir"
 
 # Page title
@@ -44,8 +43,8 @@ with st.form('myform', clear_on_submit=True):
     )
     embeddings = OpenAIEmbeddings(openai_api_key=st.secrets["OPENAI_API_KEY"])
     db = Pinecone.from_existing_index(INDEX_NAME,
-                                        embeddings,
-                                        namespace=NAMESPACE)
+                                        embeddings)
+    
     retriever = db.as_retriever()
     qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=st.secrets["OPENAI_API_KEY"]),
                                      chain_type='stuff',
